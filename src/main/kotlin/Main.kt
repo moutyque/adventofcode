@@ -1,5 +1,77 @@
 fun main(args: Array<String>) {
+    day52()
+}
 
+fun day52() {
+    //https://adventofcode.com/2022/day/5/input
+    val stacks = List(9) {
+        mutableListOf<Char>()
+    }.toMutableList()
+    val reg = """move (?<nb>\d+) from (?<from>\d) to (?<to>\d)""".toRegex()
+    var line: String
+    var counter = 0
+    while (counter < 2) {
+        line = readln()
+        if (line.isEmpty()) {
+            counter++
+        } else {
+            counter = 0
+        }
+        if (line.startsWith("move")) {
+            val groups = reg.matchEntire(line)!!.groups as MatchNamedGroupCollection
+            val (new,last) = stacks[groups["from"]!!.value.toInt() - 1].run {
+                val index = this.size - groups["nb"]!!.value.toInt()
+                Pair(subList(0,index), subList(index,size))
+            }
+            stacks[groups["from"]!!.value.toInt() - 1] = new
+            stacks[groups["to"]!!.value.toInt() - 1].addAll(
+                last
+            )
+        } else if (line.startsWith(" 1")) {
+            stacks.forEach { it.reverse() }
+        } else {
+            line.chunked(4).map { it.trim() }.forEachIndexed { index, s ->
+                if (s.isNotBlank()) stacks[index].add(s[1])
+            }
+        }
+    }
+    stacks.filterNotNull().forEachIndexed { index, chars -> print(chars.last())  }
+}
+
+fun day51() {
+    //https://adventofcode.com/2022/day/5/input
+    val stacks = List(9) {
+        mutableListOf<Char>()
+    }.toMutableList()
+    val reg = """move (?<nb>\d+) from (?<from>\d) to (?<to>\d)""".toRegex()
+    var line: String
+    var counter = 0
+    while (counter < 2) {
+        line = readln()
+        if (line.isEmpty()) {
+            counter++
+        } else {
+            counter = 0
+        }
+        if (line.startsWith("move")) {
+            val groups = reg.matchEntire(line)!!.groups as MatchNamedGroupCollection
+            val (new,last) = stacks[groups["from"]!!.value.toInt() - 1].run {
+                val index = this.size - groups["nb"]!!.value.toInt()
+                Pair(subList(0,index), subList(index,size))
+            }
+            stacks[groups["from"]!!.value.toInt() - 1] = new
+            stacks[groups["to"]!!.value.toInt() - 1].addAll(
+                last.reversed()
+            )
+        } else if (line.startsWith(" 1")) {
+            stacks.forEach { it.reverse() }
+        } else {
+            line.chunked(4).map { it.trim() }.forEachIndexed { index, s ->
+                if (s.isNotBlank()) stacks[index].add(s[1])
+            }
+        }
+    }
+    stacks.filterNotNull().forEachIndexed { index, chars -> print(chars.last())  }
 }
 
 fun day11() {
@@ -60,8 +132,8 @@ fun day21() {
 
     var line = readln()
     var score = 0
-    val firstMap = mapOf("A" to "Rock","B" to "Paper","C" to "Scissors")
-    val secondMap = mapOf("X" to "Rock","Y" to "Paper","Z" to "Scissors")
+    val firstMap = mapOf("A" to "Rock", "B" to "Paper", "C" to "Scissors")
+    val secondMap = mapOf("X" to "Rock", "Y" to "Paper", "Z" to "Scissors")
     while (line.isNotBlank()) {
         val (first, second) = line.split(" ").run {
             Pair(firstMap[this.first()], secondMap[this.last()])
@@ -75,6 +147,7 @@ fun day21() {
                     else -> 0
                 }
             }
+
             "Paper" -> {
                 when (second) {
                     "Rock" -> 1 + 0
@@ -83,6 +156,7 @@ fun day21() {
                     else -> 0
                 }
             }
+
             "Scissors" -> {
                 when (second) {
                     "Rock" -> 1 + 6
@@ -91,6 +165,7 @@ fun day21() {
                     else -> 0
                 }
             }
+
             else -> 0
         }
         line = readln()
@@ -107,8 +182,8 @@ fun day22() {
 
     var line = readln()
     var score = 0
-    val firstMap = mapOf("A" to "Rock","B" to "Paper","C" to "Scissors")
-    val secondMap = mapOf("X" to "Lose","Y" to "Draw","Z" to "Win")
+    val firstMap = mapOf("A" to "Rock", "B" to "Paper", "C" to "Scissors")
+    val secondMap = mapOf("X" to "Lose", "Y" to "Draw", "Z" to "Win")
     while (line.isNotBlank()) {
         val (first, second) = line.split(" ").run {
             Pair(firstMap[this.first()], secondMap[this.last()])
@@ -125,6 +200,7 @@ fun day22() {
                     else -> 0
                 }
             }
+
             "Paper" -> {
                 when (second) {
                     "Lose" -> 0 + 1
@@ -133,6 +209,7 @@ fun day22() {
                     else -> 0
                 }
             }
+
             "Scissors" -> {
                 when (second) {
                     "Lose" -> 0 + 2
@@ -141,6 +218,7 @@ fun day22() {
                     else -> 0
                 }
             }
+
             else -> 0
         }
         line = readln()
@@ -203,7 +281,7 @@ fun day41() {
             })
         }
 
-        if (r1.containsAll(r2)  || r2.containsAll(r1)) {
+        if (r1.containsAll(r2) || r2.containsAll(r1)) {
             score += 1
         }
         line = readln()

@@ -148,3 +148,45 @@ fun day22() {
     println(score)
 }
 
+fun day32() {
+    val scores = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    var line = readln()
+    var score = 0
+    while (line.isNotBlank()) {
+        val e1 = line
+        val e2 = readln()
+        val e3 = readln()
+        for (c in listOf(e1, e2, e3).minBy { it.length }) {
+            if (c in e1 && c in e2 && c in e3) {
+                score += scores.indexOf(c) + 1
+                break
+            }
+        }
+        line = readln()
+    }
+    println(score)
+
+
+}
+
+fun day31() {
+    fun main() {
+        val scores = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        var line = readln()
+        var score = 0
+        while (line.isNotBlank()) {
+            val (first, second) = line.chunked(line.length / 2)
+            for (c in first) {
+                if (c in second) {
+                    score += scores.indexOf(c) + 1
+                    break
+                }
+            }
+            line = readln()
+        }
+        println(score)
+
+
+    }
+}
+

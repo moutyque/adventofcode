@@ -1,7 +1,41 @@
 fun main(args: Array<String>) {
     day52()
 }
+fun day62(){
+    var line = readln()
+    var score = 0
+    while(line.isNotEmpty()){
+        for(i in 0 until line.length-4){
+            if (line.substring(i,i+14).run {
+                    this.length == this.toSet().count()
+                }){
+                score += i+14
+                break
+            }
+        }
+        line = readln()
+    }
+    println(score)
 
+}
+
+fun day61(){
+    var line = readln()
+    var score = 0
+    while(line.isNotEmpty()){
+        for(i in 0 until line.length-4){
+            if (line.substring(i,i+4).run {
+                    this.length == this.toSet().count()
+                }){
+                score += i+4
+                break
+            }
+        }
+        line = readln()
+    }
+    println(score)
+
+}
 fun day52() {
     //https://adventofcode.com/2022/day/5/input
     val stacks = List(9) {

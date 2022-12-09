@@ -1,9 +1,121 @@
 fun main(args: Array<String>) {
-    day72()
+    day82()
+}
+
+fun day82() {
+    val trees = mutableListOf<List<Int>>()
+    var line = readln()
+    while (line.isNotEmpty()) {
+        trees.add(line.toCharArray().map { it.code - 48 })
+        line = readln()
+    }
+
+    fun Int.visibleTreeOnLeft(r: Int, c: Int, currentScore: Int = 1): Int =
+        when {
+            c < 0 -> currentScore-1
+            trees[r][c] >= this -> currentScore
+            else -> visibleTreeOnLeft(r, c - 1, currentScore + 1)
+        }
+
+    fun Int.visibleTreeOnRight(r: Int, c: Int, currentScore: Int = 1): Int =
+        when {
+            c > trees.first().size - 1 -> currentScore -1
+            trees[r][c] >= this -> currentScore
+            else -> visibleTreeOnRight(r, c + 1, currentScore + 1)
+        }
+
+
+    fun Int.visibleTreeOnTop(r: Int, c: Int, currentScore: Int = 1): Int =
+        when {
+            r < 0 -> currentScore -1
+            trees[r][c] >= this -> currentScore
+            else -> visibleTreeOnTop(r - 1, c, currentScore + 1)
+        }
+
+    fun Int.visibleTreeButtom(r: Int, c: Int, currentScore: Int = 1): Int =
+        when {
+            r > trees.size - 1 -> currentScore - 1
+            trees[r][c] >= this -> currentScore
+            else -> visibleTreeButtom(r + 1, c, currentScore + 1)
+        }
+
+    var visibleInside = 0
+    for (column in 1..trees.first().size - 2) {
+        for (row in 1..trees.size - 2) {
+            visibleInside = maxOf(
+                visibleInside, trees[row][column].run {
+                    visibleTreeOnLeft(row, column - 1) * visibleTreeOnRight(row, column + 1) * visibleTreeOnTop(
+                        row - 1,
+                        column
+                    ) * visibleTreeButtom(row + 1, column)
+
+                })
+
+        }
+    }
+    println(visibleInside)
+
+}
+
+fun day81() {
+    val trees = mutableListOf<List<Int>>()
+    var line = readln()
+    while (line.isNotEmpty()) {
+        trees.add(line.toCharArray().map { it.code - 48 })
+        line = readln()
+    }
+    fun Int.visibleOnLeftTree(r: Int, c: Int): Boolean =
+        when {
+            c < 0 -> true
+            trees[r][c] >= this -> false
+            else -> visibleOnLeftTree(r, c - 1)
+        }
+
+    fun Int.visibleOnRightTree(r: Int, c: Int): Boolean =
+        when {
+            c > trees.first().size - 1 -> true
+            trees[r][c] >= this -> false
+            else -> visibleOnRightTree(r, c + 1)
+        }
+
+
+    fun Int.visibleOnTopTree(r: Int, c: Int): Boolean =
+        when {
+            r < 0 -> true
+            trees[r][c] >= this -> false
+            else -> visibleOnTopTree(r - 1, c)
+        }
+
+    fun Int.visibleOnBottomTree(r: Int, c: Int): Boolean =
+        when {
+            r > trees.size - 1 -> true
+            trees[r][c] >= this -> false
+            else -> visibleOnBottomTree(r + 1, c)
+        }
+
+    val visibleEdges = trees.first().size + trees.last().size + (trees.size * 2) - 4
+    var visibleInside = 0
+    for (column in 1..trees.first().size - 2) {
+        for (row in 1..trees.size - 2) {
+            trees[row][column].apply {
+                visibleInside += when (visibleOnLeftTree(row, column - 1) || visibleOnRightTree(
+                    row,
+                    column + 1
+                ) || visibleOnTopTree(row - 1, column) || visibleOnBottomTree(row + 1, column)) {
+                    true -> 1
+                    false -> 0
+                }
+            }
+
+        }
+    }
+    println(visibleEdges + visibleInside)
+
 }
 
 fun day72() {
     var line = readln()
+
     data class Dir(val name: String, val size: Int = 0, val subDirs: MutableCollection<Dir> = mutableListOf()) {
         fun computeSize(): Int = size + subDirs.sumOf { it.computeSize() }
     }
@@ -24,6 +136,7 @@ fun day72() {
                     }
                 }
             }
+
             else -> {
                 line.split(" ").run {
                     when {
@@ -34,6 +147,7 @@ fun day72() {
                                 dirs.putIfAbsent(key, it)
                             }
                         }
+
                         else -> {
                             dirs[currentKey]!!.subDirs.add(Dir(this.last(), this.first().toInt()))
                         }
@@ -44,10 +158,12 @@ fun day72() {
         line = readln()
     }
     val freeSpace = 70_000_000 - dirs["/"]!!.computeSize()
-    println(dirs.values.filter { freeSpace + it.computeSize() > 30_000_000  }.minBy { it.computeSize() }.computeSize())
+    println(dirs.values.filter { freeSpace + it.computeSize() > 30_000_000 }.minBy { it.computeSize() }.computeSize())
 }
+
 fun day71() {
     var line = readln()
+
     data class Dir(val name: String, val size: Int = 0, val subDirs: MutableCollection<Dir> = mutableListOf()) {
         fun computeSize(): Int = size + subDirs.sumOf { it.computeSize() }
     }
@@ -68,6 +184,7 @@ fun day71() {
                     }
                 }
             }
+
             else -> {
                 line.split(" ").run {
                     when {
@@ -78,6 +195,7 @@ fun day71() {
                                 dirs.putIfAbsent(key, it)
                             }
                         }
+
                         else -> {
                             dirs[currentKey]!!.subDirs.add(Dir(this.last(), this.first().toInt()))
                         }

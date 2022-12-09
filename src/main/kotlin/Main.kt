@@ -1,15 +1,104 @@
 fun main(args: Array<String>) {
-    day52()
+    day72()
 }
-fun day62(){
+
+fun day72() {
+    var line = readln()
+    data class Dir(val name: String, val size: Int = 0, val subDirs: MutableCollection<Dir> = mutableListOf()) {
+        fun computeSize(): Int = size + subDirs.sumOf { it.computeSize() }
+    }
+
+    val dirs = HashMap<String, Dir>()
+    var currentKey = ""
+    while (line.isNotEmpty()) {
+        when {
+            line.startsWith("$") -> {
+                when {
+                    line.startsWith("$ cd") && !line.endsWith("..") -> {
+                        currentKey += line.removePrefix("$ cd ").run { if (currentKey.isEmpty()) this else "/$this" }
+                        dirs.computeIfAbsent(currentKey) { Dir(currentKey) }
+                    }
+
+                    line.startsWith("$ cd ..") -> {
+                        currentKey = currentKey.substringBeforeLast("/")
+                    }
+                }
+            }
+            else -> {
+                line.split(" ").run {
+                    when {
+                        this.first() == "dir" -> {
+                            val key = "$currentKey/${this.last()}"
+                            Dir(key).also {
+                                dirs[currentKey]!!.subDirs.add(it)
+                                dirs.putIfAbsent(key, it)
+                            }
+                        }
+                        else -> {
+                            dirs[currentKey]!!.subDirs.add(Dir(this.last(), this.first().toInt()))
+                        }
+                    }
+                }
+            }
+        }
+        line = readln()
+    }
+    val freeSpace = 70_000_000 - dirs["/"]!!.computeSize()
+    println(dirs.values.filter { freeSpace + it.computeSize() > 30_000_000  }.minBy { it.computeSize() }.computeSize())
+}
+fun day71() {
+    var line = readln()
+    data class Dir(val name: String, val size: Int = 0, val subDirs: MutableCollection<Dir> = mutableListOf()) {
+        fun computeSize(): Int = size + subDirs.sumOf { it.computeSize() }
+    }
+
+    val dirs = HashMap<String, Dir>()
+    var currentKey = ""
+    while (line.isNotEmpty()) {
+        when {
+            line.startsWith("$") -> {
+                when {
+                    line.startsWith("$ cd") && !line.endsWith("..") -> {
+                        currentKey += line.removePrefix("$ cd ").run { if (currentKey.isEmpty()) this else "/$this" }
+                        dirs.computeIfAbsent(currentKey) { Dir(currentKey) }
+                    }
+
+                    line.startsWith("$ cd ..") -> {
+                        currentKey = currentKey.substringBeforeLast("/")
+                    }
+                }
+            }
+            else -> {
+                line.split(" ").run {
+                    when {
+                        this.first() == "dir" -> {
+                            val key = "$currentKey/${this.last()}"
+                            Dir(key).also {
+                                dirs[currentKey]!!.subDirs.add(it)
+                                dirs.putIfAbsent(key, it)
+                            }
+                        }
+                        else -> {
+                            dirs[currentKey]!!.subDirs.add(Dir(this.last(), this.first().toInt()))
+                        }
+                    }
+                }
+            }
+        }
+        line = readln()
+    }
+    println(dirs.values.filter { it.computeSize() <= 100_000 }.sumOf { it.computeSize() })
+}
+
+fun day62() {
     var line = readln()
     var score = 0
-    while(line.isNotEmpty()){
-        for(i in 0 until line.length-4){
-            if (line.substring(i,i+14).run {
+    while (line.isNotEmpty()) {
+        for (i in 0 until line.length - 4) {
+            if (line.substring(i, i + 14).run {
                     this.length == this.toSet().count()
-                }){
-                score += i+14
+                }) {
+                score += i + 14
                 break
             }
         }
@@ -19,15 +108,15 @@ fun day62(){
 
 }
 
-fun day61(){
+fun day61() {
     var line = readln()
     var score = 0
-    while(line.isNotEmpty()){
-        for(i in 0 until line.length-4){
-            if (line.substring(i,i+4).run {
+    while (line.isNotEmpty()) {
+        for (i in 0 until line.length - 4) {
+            if (line.substring(i, i + 4).run {
                     this.length == this.toSet().count()
-                }){
-                score += i+4
+                }) {
+                score += i + 4
                 break
             }
         }
@@ -36,6 +125,7 @@ fun day61(){
     println(score)
 
 }
+
 fun day52() {
     //https://adventofcode.com/2022/day/5/input
     val stacks = List(9) {
@@ -53,9 +143,9 @@ fun day52() {
         }
         if (line.startsWith("move")) {
             val groups = reg.matchEntire(line)!!.groups as MatchNamedGroupCollection
-            val (new,last) = stacks[groups["from"]!!.value.toInt() - 1].run {
+            val (new, last) = stacks[groups["from"]!!.value.toInt() - 1].run {
                 val index = this.size - groups["nb"]!!.value.toInt()
-                Pair(subList(0,index), subList(index,size))
+                Pair(subList(0, index), subList(index, size))
             }
             stacks[groups["from"]!!.value.toInt() - 1] = new
             stacks[groups["to"]!!.value.toInt() - 1].addAll(
@@ -69,7 +159,7 @@ fun day52() {
             }
         }
     }
-    stacks.filterNotNull().forEachIndexed { index, chars -> print(chars.last())  }
+    stacks.filterNotNull().forEachIndexed { index, chars -> print(chars.last()) }
 }
 
 fun day51() {
@@ -89,9 +179,9 @@ fun day51() {
         }
         if (line.startsWith("move")) {
             val groups = reg.matchEntire(line)!!.groups as MatchNamedGroupCollection
-            val (new,last) = stacks[groups["from"]!!.value.toInt() - 1].run {
+            val (new, last) = stacks[groups["from"]!!.value.toInt() - 1].run {
                 val index = this.size - groups["nb"]!!.value.toInt()
-                Pair(subList(0,index), subList(index,size))
+                Pair(subList(0, index), subList(index, size))
             }
             stacks[groups["from"]!!.value.toInt() - 1] = new
             stacks[groups["to"]!!.value.toInt() - 1].addAll(
@@ -105,7 +195,7 @@ fun day51() {
             }
         }
     }
-    stacks.filterNotNull().forEachIndexed { index, chars -> print(chars.last())  }
+    stacks.filterNotNull().forEachIndexed { index, chars -> print(chars.last()) }
 }
 
 fun day11() {

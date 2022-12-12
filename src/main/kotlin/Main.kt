@@ -1,7 +1,68 @@
 import kotlin.math.abs
 
 fun main() {
-    day92()
+    day102()
+}
+
+fun day102() {
+    var line = readln()
+    var X = 1
+    var cycle = 0
+    var position = 1
+    val sb = StringBuilder()
+    fun updateCycle() {
+
+        if (position == cycle || position + 1 == cycle || position - 1 == cycle) {
+            sb.append("#")
+        } else {
+            sb.append(".")
+        }
+        cycle++
+        cycle %= 40
+    }
+    while (line.isNotEmpty()) {
+        when {
+            line.startsWith("noop") -> {
+                updateCycle()
+            }
+
+            line.startsWith("addx") -> {
+                updateCycle()
+                updateCycle()
+                position += line.removePrefix("addx ").toInt()
+            }
+        }
+        line = readln()
+    }
+    sb.forEachIndexed { index, c -> if (index % 40 == 0) print("\n$c") else print(c) }
+}
+
+fun day101() {
+    var line = readln()
+    var X = 1
+    var cycle = 0
+    var score = 0
+    fun Int.updateScore(strength: Int) = if (((this - 20) % 40) == 0) {
+        this * strength
+    } else 0
+    while (line.isNotEmpty()) {
+        when {
+            line.startsWith("noop") -> {
+                cycle++
+                score += cycle.updateScore(X)
+            }
+
+            line.startsWith("addx") -> {
+                cycle++
+                score += cycle.updateScore(X)
+                cycle++
+                score += cycle.updateScore(X)
+                X += line.removePrefix("addx ").toInt()
+            }
+        }
+        line = readln()
+    }
+    println(score)
 }
 
 fun day92() {

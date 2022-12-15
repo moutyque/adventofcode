@@ -2,9 +2,105 @@ import java.math.BigInteger
 import kotlin.math.abs
 
 fun main() {
-    day122()
+    day131()
 }
 
+typealias Level = Int
+
+typealias Value = Int
+fun day131() {
+    var counter = 0
+    var score = 0
+
+    fun List<String>.buildLevel(): MutableList<Int> {
+        var level = 0
+        val levels = mutableListOf<Int>()
+        for (c in this) {
+            when (c) {
+                "[" -> {
+                    level++
+                }
+
+                "]" -> {
+                    level--
+                }
+            }
+            levels.add(level)
+        }
+        return levels
+    }
+
+    fun String.isNumeric(): Boolean {
+        return this.toDoubleOrNull() != null
+    }
+
+    fun String.clean(): Pair<List<Value>, MutableList<Level>> =
+        this.replace("[]", "[-1]")
+            .split(",")
+            .flatMap { it.split("""((?=\])|(?<=\[))""".toRegex()) }
+            .run {
+                mapIndexed { index, c -> if (c.isNumeric()) index else -1 }
+                    .filter { it > 0 }
+                    .let { indexes ->
+                        Pair(
+                            indexes.map { this[it].toInt() },
+                            indexes.mapTo(mutableListOf()) { buildLevel()[it] })
+                    }
+            }
+
+
+    fun MutableList<Int>.updateLevel(newLevel: Int, refLevel: Int, startIndex: Int) {
+        var tmpIdx = startIndex
+        while (tmpIdx < this.size && this[tmpIdx] == refLevel) {
+            this[tmpIdx] = newLevel
+            tmpIdx++
+        }
+    }
+
+    var isContinue = true
+    while (isContinue) {
+        counter++
+        val (left, leftLevels) = readln().apply {
+            if (isEmpty()) isContinue = false
+        }.clean()
+
+        val (right, rightLevels) = readln().apply {
+            if (isEmpty()) isContinue = false
+        }.clean()
+
+        if (!isContinue) break
+        var index = 0
+        var currentResult = true
+        while (index < left.size) {
+            if (leftLevels[index] == rightLevels[index]) {
+                if (left[index] < right[index]) {
+                    currentResult = true
+                    break
+                } else if (left[index] > right[index]) {
+                    currentResult = false
+                    break
+                } else {
+                    index++
+                    if (index >= right.size) {
+                        currentResult = false
+                        break
+                    }
+                }
+            } else if (leftLevels[index] > rightLevels[index]) {
+                rightLevels.updateLevel(leftLevels[index], rightLevels[index], index)
+            } else if (leftLevels[index] < rightLevels[index]) {
+                leftLevels.updateLevel(rightLevels[index], leftLevels[index], index)
+            }
+        }
+
+        readln()
+        if (currentResult) score += counter
+        println("$counter: $currentResult -> $score")
+    }
+
+    println(score)
+
+}
 data class Node(val x: Int, val y: Int, val height: Int) {
     val edges: MutableList<Edge> = mutableListOf()
 }
@@ -28,18 +124,20 @@ fun day122() {
                 'S' -> {
                     distances[Node(c, r, 0)] = Long.MAX_VALUE - 1
                 }
+
                 'E' -> {
                     Node(c, r, 25).apply {
                         distances[this] = 0
                         end = this
                     }
                 }
+
                 else -> distances[Node(c, r, convertor.indexOf(maze[r][c]))] = Long.MAX_VALUE - 1
             }
         }
     }
     for (node in distances.keys) {
-        node.edges.addAll(distances.keys.asSequence().filter { node.height <= it.height +1 }
+        node.edges.addAll(distances.keys.asSequence().filter { node.height <= it.height + 1 }
             .filter { (it.x == node.x && (it.y + 1 == node.y || it.y - 1 == node.y)) || (it.y == node.y && (it.x + 1 == node.x || it.x - 1 == node.x)) }
             .map { Edge(1, it) }
             .toList())
@@ -60,6 +158,7 @@ fun day122() {
     }
     println(distances[distances.keys.filter { it.height == 0 }.minBy { distances[it]!! }])
 }
+
 fun day121() {
     var line = readln()
     val maze = mutableListOf<String>()
@@ -77,18 +176,20 @@ fun day121() {
                 'S' -> {
                     distances[Node(c, r, 0)] = 0
                 }
+
                 'E' -> {
                     Node(c, r, 25).apply {
                         distances[this] = Long.MAX_VALUE - 1
                         end = this
                     }
                 }
+
                 else -> distances[Node(c, r, convertor.indexOf(maze[r][c]))] = Long.MAX_VALUE - 1
             }
         }
     }
     for (node in distances.keys) {
-        node.edges.addAll(distances.keys.asSequence().filter { it.height <= node.height +1 }
+        node.edges.addAll(distances.keys.asSequence().filter { it.height <= node.height + 1 }
             .filter { (it.x == node.x && (it.y + 1 == node.y || it.y - 1 == node.y)) || (it.y == node.y && (it.x + 1 == node.x || it.x - 1 == node.x)) }
             .map { Edge(1, it) }
             .toList())

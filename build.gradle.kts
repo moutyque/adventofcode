@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.7.20"
     application
+    kotlin("plugin.serialization") version "1.7.20"
 }
 
 group = "org.example"
@@ -14,6 +15,8 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.1")
 }
 
 tasks.test {
@@ -27,3 +30,4 @@ tasks.withType<KotlinCompile> {
 application {
     mainClass.set("MainKt")
 }
+

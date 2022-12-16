@@ -1,99 +1,82 @@
 package day13
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.IntNode
 import java.io.File
+import java.lang.Integer.min
+
 
 typealias Level = Int
 
 typealias Value = Int
+
 fun main() {
     val iterator = File("./src/main/kotlin/day13/input").readLines().iterator()
-
     day131(iterator)
+    //day131(iterator)
 }
-fun List<String>.buildLevel(): MutableList<Int> {
-    var level = 0
-    val levels = mutableListOf<Int>()
-    for (c in this) {
-        when (c) {
-            "[" -> {
-                level++
-            }
-
-            "]" -> {
-                level--
-            }
-        }
-        levels.add(level)
-    }
-    return levels
-}
-
-fun String.isNumeric(): Boolean {
-    return this.toDoubleOrNull() != null
-}
-
-fun String.clean(): Pair<List<Value>, MutableList<Level>> =
-    this.replace("[]", "[-1]")
-        .split(",")
-        .flatMap { it.split("""((?=\])|(?<=\[))""".toRegex()) }
-        .run {
-            mapIndexed { index, c -> if (c.isNumeric()) index else -1 }
-                .filter { it > 0 }
-                .let { indexes ->
-                    Pair(
-                        indexes.map { this[it].toInt() },
-                        indexes.mapTo(mutableListOf()) { buildLevel()[it] })
-                }
-        }
-
-
-fun MutableList<Int>.updateLevel(newLevel: Int, refLevel: Int, startIndex: Int) {
-    var tmpIdx = startIndex
-    while (tmpIdx < this.size && this[tmpIdx] == refLevel) {
-        this[tmpIdx] = newLevel
-        tmpIdx++
-    }
-}
-
+//TODO: error at 101
 fun day131(iterator: Iterator<String>) {
-    var counter = 0
+    val mapper = ObjectMapper()
+    //JSON file to Java object
     var score = 0
-
-
+    var idx = 0
     while (iterator.hasNext()) {
-        counter++
-        val (left, leftLevels) = iterator.next().clean()
-        val (right, rightLevels) = iterator.next().clean()
-        iterator.next()//Empty line
-        var index = 0
-        var currentResult = true
-        while (index < left.size) {
-            if (leftLevels[index] == rightLevels[index]) {
-                if (left[index] < right[index]) {
-                    currentResult = true
-                    break
-                } else if (left[index] > right[index]) {
-                    currentResult = false
-                    break
-                } else {
-                    index++
-                    if (index >= right.size) {
-                        currentResult = false
-                        break
-                    }
-                }
-            } else if (leftLevels[index] > rightLevels[index]) {
-                rightLevels.updateLevel(leftLevels[index], rightLevels[index], index)
-            } else if (leftLevels[index] < rightLevels[index]) {
-                leftLevels.updateLevel(rightLevels[index], leftLevels[index], index)
+        val packet1 = mapper.readTree(iterator.next()).convert()
+        val packet2 = mapper.readTree(iterator.next()).convert()
+        iterator.next()
+        idx++
+        var s = idx.toString()
+        when (compare(packet1, packet2)) {
+            Result.OK -> {
+                score += idx
+                s += ": true -> "
+            }
+
+            else -> {
+                s += ": false -> "
             }
         }
-
-
-        if (currentResult) score += counter
-        println("$counter: $currentResult -> $score")
+        s+=score
+        println(s)
     }
-
     println(score)
+}
 
+enum class Result(val value: Int) {
+    OK(-1),
+    KO(1),
+    TIE(0)
+}
+
+fun JsonNode.convert(): Any {
+    if (this is IntNode) return this.intValue()
+    if (this is ArrayNode) return this.map { it.convert() }.toList()
+    return emptyList<Int>()
+}
+
+fun compare(left: Any, right: Any): Result {
+    if (left is Int && right is Int) {
+        return Result.values().first { it.value == (left.compareTo(right)) }
+    } else if (left is List<*> && right is List<*>) {
+        val minSize = min(left.size, right.size)
+        for (idx in 0 until minSize) {
+            when (val r = compare(left[idx]!!, right[idx]!!)) {
+                Result.TIE -> continue
+                else -> return r
+            }
+        }
+        return if (left.size < right.size) {
+            Result.OK
+        } else {
+            Result.KO
+        }
+    } else if (left is Int && right is List<*>) {
+        return compare(listOf(left), right)
+    } else if (left is List<*> && right is Int) {
+        return compare(left, listOf(right))
+    }
+    return Result.TIE
 }

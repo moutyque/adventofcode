@@ -15,9 +15,8 @@ typealias Value = Int
 fun main() {
     val iterator = File("./src/main/kotlin/day13/input").readLines().iterator()
     day131(iterator)
-    //day131(iterator)
 }
-//TODO: error at 101
+
 fun day131(iterator: Iterator<String>) {
     val mapper = ObjectMapper()
     //JSON file to Java object
@@ -28,19 +27,12 @@ fun day131(iterator: Iterator<String>) {
         val packet2 = mapper.readTree(iterator.next()).convert()
         iterator.next()
         idx++
-        var s = idx.toString()
         when (compare(packet1, packet2)) {
             Result.OK -> {
                 score += idx
-                s += ": true -> "
             }
-
-            else -> {
-                s += ": false -> "
-            }
+            else ->{}
         }
-        s+=score
-        println(s)
     }
     println(score)
 }
@@ -51,32 +43,33 @@ enum class Result(val value: Int) {
     TIE(0)
 }
 
-fun JsonNode.convert(): Any {
-    if (this is IntNode) return this.intValue()
-    if (this is ArrayNode) return this.map { it.convert() }.toList()
-    return emptyList<Int>()
-}
-
-fun compare(left: Any, right: Any): Result {
-    if (left is Int && right is Int) {
-        return Result.values().first { it.value == (left.compareTo(right)) }
-    } else if (left is List<*> && right is List<*>) {
-        val minSize = min(left.size, right.size)
-        for (idx in 0 until minSize) {
-            when (val r = compare(left[idx]!!, right[idx]!!)) {
-                Result.TIE -> continue
-                else -> return r
-            }
-        }
-        return if (left.size < right.size) {
-            Result.OK
-        } else {
-            Result.KO
-        }
-    } else if (left is Int && right is List<*>) {
-        return compare(listOf(left), right)
-    } else if (left is List<*> && right is Int) {
-        return compare(left, listOf(right))
+fun JsonNode.convert(): Any =
+    when (this) {
+        is IntNode -> this.intValue()
+        is ArrayNode -> this.map { it.convert() }.toList()
+        else -> emptyList<Int>()
     }
-    return Result.TIE
-}
+
+fun compare(left: Any, right: Any): Result =
+    when {
+        (left is Int && right is Int) -> Result.values().first { it.value == (left.compareTo(right)) }
+        (left is Int && right is List<*>) -> compare(listOf(left), right)
+        (left is List<*> && right is Int) -> compare(left, listOf(right))
+        (left is List<*> && right is List<*>) -> {
+            min(left.size, right.size).let {
+                left.asSequence()
+                    .filterIndexed { index, _ -> index < it }
+                    .mapIndexed { index, any -> compare(any!!, right[index]!!) }
+                    .firstOrNull { it != Result.TIE } ?: run {
+                    when (left.size.compareTo(right.size)) {
+                        -1 -> Result.OK
+                        1 -> Result.KO
+                        else -> Result.TIE
+                    }
+                }
+            }
+
+        }
+        else -> Result.TIE
+    }
+

@@ -14,7 +14,22 @@ typealias Value = Int
 
 fun main() {
     val iterator = File("./src/main/kotlin/day13/input").readLines().iterator()
-    day131(iterator)
+    day132(iterator)
+}
+
+fun day132(iterator: Iterator<String>) {
+    val dp1 = listOf(listOf(2))
+    val dp2 = listOf(listOf(6))
+
+    println(iterator.asSequence()
+        .map { ObjectMapper().readTree(it).convert() }
+        .filter { it != -1 }
+        .sortedWith { o1, o2 -> compare(o1!!, o2!!).value }
+        .mapIndexed { index, any -> if (any == dp1 || any == dp2) index + 1 else 0 }
+        .filter { it != 0 }
+        .fold(1) { acc: Int, i: Int ->
+            acc * i
+        })
 }
 
 fun day131(iterator: Iterator<String>) {
@@ -31,7 +46,7 @@ fun day131(iterator: Iterator<String>) {
             Result.OK -> {
                 score += idx
             }
-            else ->{}
+            else -> {}
         }
     }
     println(score)
@@ -47,7 +62,7 @@ fun JsonNode.convert(): Any =
     when (this) {
         is IntNode -> this.intValue()
         is ArrayNode -> this.map { it.convert() }.toList()
-        else -> emptyList<Int>()
+        else -> -1
     }
 
 fun compare(left: Any, right: Any): Result =

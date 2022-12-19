@@ -16,7 +16,6 @@ fun String.isFree() = when (this) {
 
 fun Array<Array<String>>.sandGoesDow(x: Int, y: Int): Boolean =
     when {
-
         (y >= this[x].size - 1) -> false
         this[x][y + 1].isFree() -> this.sandGoesDow(x, y + 1) //Below is free
         this[x - 1][y + 1].isFree() -> this.sandGoesDow(x - 1, y + 1) //Below left is free
@@ -72,9 +71,12 @@ fun day141(iterator: Iterator<String>) {
     grid.fill(0,maxY,699,maxY ) //New condtion for second statement
     //Fil the sand until get out
     grid[500][0] = "+"
-    while (grid.sandGoesDow(500, 0)){
+    repeatWhileTrue { grid.sandGoesDow(500, 0) }
 
-    }
     //How many grid or field with sands
     grid.iterator().asSequence().map { row -> row.map { it == "O" }.count { it } }.sum().let { println(it) }
+}
+
+fun repeatWhileTrue(action: () -> Boolean) {
+    while (action());
 }

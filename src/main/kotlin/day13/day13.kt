@@ -7,11 +7,6 @@ import com.fasterxml.jackson.databind.node.IntNode
 import java.io.File
 import java.lang.Integer.min
 
-
-typealias Level = Int
-
-typealias Value = Int
-
 fun main() {
     val iterator = File("./src/main/kotlin/day13/input").readLines().iterator()
     day132(iterator)

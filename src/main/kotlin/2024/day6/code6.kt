@@ -49,6 +49,8 @@ fun Sequence<String>.compute61(): Int {
     }
     return crossedPosition.size +1
 }
+
+//Change to find if any other square using next position on the same line until end of grid
 fun Sequence<String>.compute62(): Int {
     var possibleBlock = 0
     val grid = this.map { it.split("") }.toList()

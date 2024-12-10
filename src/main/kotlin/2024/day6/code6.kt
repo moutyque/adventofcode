@@ -1,5 +1,7 @@
 package `2024`.day6
 
+import plus
+import prepare
 import java.io.File
 
 
@@ -18,8 +20,6 @@ fun main() {
     require(actual2 == 6)
     File("${prefix}/1").readLines().asSequence().compute62().let { println(it) }
 }
-
-fun File.prepare() = this.readLines().asSequence().filter { it.isNotBlank() }
 
 val up = Pair(-1, 0)
 val down = Pair(1, 0)
@@ -111,7 +111,7 @@ fun walkAround(grid: List<List<String>>, block: (position: Position) -> Boolean)
 fun Int.nextPositionIndex() = (this + 1) % directions.size
 
 fun List<List<String>>.get(position: Pair<Int, Int>) = this[position.first][position.second]
-fun Pair<Int, Int>.plus(b: Pair<Int, Int>) = Pair(this.first + b.first, this.second + b.second)
+
 typealias Direction = Pair<Int, Int>
 typealias Position = Pair<Int, Int>
 

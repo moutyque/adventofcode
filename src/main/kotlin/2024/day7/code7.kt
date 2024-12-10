@@ -1,5 +1,6 @@
 package `2024`.day7
 
+import prepare
 import java.io.File
 
 const val day = 7
@@ -19,7 +20,6 @@ fun main() {
     //140599577242124 -> too high
 }
 
-fun File.prepare() = this.readLines().asSequence().filter { it.isNotBlank() }
 
 
 fun Sequence<String>.compute71(): Long = this.compute7(

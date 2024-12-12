@@ -16,7 +16,11 @@ fun main() {
     val actual2 = File("${prefix}/test").readLines().asSequence().filter { it.isNotBlank() }.compute92()
     println(actual2)
     require(actual2 == 2858L)
-    File("${prefix}/input").readLines().asSequence().compute92().let { println(it) }
+    Day09(File("${prefix}/input").readLines().first()).solvePart2().also { println(it) }
+    File("${prefix}/input").readLines().asSequence().compute92().let {
+        println(it)
+        require(it < 6227032807957)
+    }
 
 }
 
@@ -50,27 +54,28 @@ fun Sequence<Line>.compute92(): Long = this.compute9 { list -> list.reorderBlock
 fun Sequence<Line>.compute91(): Long = this.compute9 { list -> list.reorderIndividual() }
 
 fun MutableList<Long>.reorderBlock() {
-    var j = this.lastIndex
-    var firstEmptyIndex = 0
-    while (this[firstEmptyIndex] !=-1L){
-        firstEmptyIndex++
-    }
-    while (firstEmptyIndex < j) {
+    var rightCursor = this.lastIndex
+    /*var leftCursor = 0
+    while (this[leftCursor] != -1L) {
+        leftCursor++
+    }*/
+    while (0 <= rightCursor) {
         //Find block
-        val blockToMove = this.buildBlockBackward(j) ?: return
-        val emptyBlock = this.findEmptySpot(blockToMove,firstEmptyIndex)
-        if (emptyBlock != null) {
+        val blockToMove = this.buildBlockBackward(rightCursor) ?: return
+        val emptySpot = this.findEmptySpot(blockToMove, 0)
+        if (emptySpot != null) {
+            if(emptySpot.start >= blockToMove.start) return
             //Move block
-            this.moveBlock(blockToMove, emptyBlock.start)
+            this.moveBlock(blockToMove, emptySpot.start)
             this.clean(blockToMove)
         }
-        j -= blockToMove.size
-        while (this[j] == -1L) {
-            j--
+        rightCursor -= blockToMove.size
+        while (this[rightCursor] == -1L) {
+            rightCursor--
         }
-        while (this[firstEmptyIndex] !=-1L){
-            firstEmptyIndex++
-        }
+       /* while (this[leftCursor] != -1L) {
+            leftCursor++
+        }*/
     }
 
 }
@@ -87,7 +92,7 @@ fun MutableList<Long>.moveBlock(block: Block, startIndex: Int) {
     }
 }
 
-fun MutableList<Long>.findEmptySpot(blockToMove: Block,firstEmptyIndex:Int): Block? =
+fun MutableList<Long>.findEmptySpot(blockToMove: Block, firstEmptyIndex: Int): Block? =
     try {
         var i = firstEmptyIndex
         var emptyBlock = this.buildBlockForward(i)

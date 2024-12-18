@@ -1,7 +1,13 @@
 package `2024`.day6
 
+import directions
+import down
+import getValue
+import left
 import plus
 import prepare
+import right
+import up
 import java.io.File
 
 
@@ -21,11 +27,7 @@ fun main() {
     File("${prefix}/1").readLines().asSequence().compute62().let { println(it) }
 }
 
-val up = Pair(-1, 0)
-val down = Pair(1, 0)
-val right = Pair(0, 1)
-val left = Pair(0, -1)
-val directions = listOf(up, right, down, left)
+
 
 
 fun Sequence<String>.compute61(): Int {
@@ -36,7 +38,7 @@ fun Sequence<String>.compute61(): Int {
     //Until out apply move
     while (position.first in grid.indices && position.second in grid.first().indices) {
         try {
-            if (grid.get(position.plus(currentMove)) == "#") {
+            if (grid.getValue(position.plus(currentMove)) == "#") {
                 moveIndex = (moveIndex + 1) % directions.size
                 currentMove = directions[moveIndex]
             }
@@ -66,7 +68,7 @@ fun Sequence<String>.compute62(): Int {
     crossedPosition.remove(position)
     var sum = 0
     for (testPosition in crossedPosition) {
-        val initChar = grid.get(testPosition)
+        val initChar = grid.getValue(testPosition)
         grid[testPosition.first][testPosition.second] = "#"
         val countingPosition = mutableMapOf<Position, Int>()
 
@@ -91,7 +93,7 @@ fun walkAround(grid: List<List<String>>, block: (position: Position) -> Boolean)
     //Until out apply move
     while (position.first in grid.indices && position.second in grid.first().indices) {
         try {
-            if (grid.get(position.plus(currentMove)) == "#") {
+            if (grid.getValue(position.plus(currentMove)) == "#") {
                 moveIndex = moveIndex.nextPositionIndex()
                 currentMove = directions[moveIndex]
             } else {
@@ -109,8 +111,6 @@ fun walkAround(grid: List<List<String>>, block: (position: Position) -> Boolean)
 }
 
 fun Int.nextPositionIndex() = (this + 1) % directions.size
-
-fun List<List<String>>.get(position: Pair<Int, Int>) = this[position.first][position.second]
 
 typealias Direction = Pair<Int, Int>
 typealias Position = Pair<Int, Int>

@@ -16,142 +16,64 @@ fun main() {
     val actual2 = File("${prefix}/test").readLines().asSequence().filter { it.isNotBlank() }.compute92()
     println(actual2)
     require(actual2 == 2858L)
-    Day09(File("${prefix}/input").readLines().first()).solvePart2().also { println(it) }
     File("${prefix}/input").readLines().asSequence().compute92().let {
         println(it)
-        require(it < 6227032807957)
+        require(it == 6227018762750L)
     }
 
 }
 
-data class Block(val start: Int, val size: Int, val value: Long) {
-    fun end() = start + size
+data class Block(var start: Int, var size: Int, val id: Long) {
+    fun subBlocks() = (0 until size).map { Block(it + start, 1, id) }
+
 }
 
-fun Sequence<Line>.compute9(block: (list: MutableList<Long>) -> Unit): Long = this.map { l ->
-    val explicitRow = mutableListOf<Long>()
-    var id = 0L
-    var isFile = true
-    l.split("").filter { it.isNotBlank() }.forEach { n ->
-        for (i in 1..n.toLong()) {
-            if (isFile) {
-                explicitRow.add(id)
-            } else {
-                explicitRow.add(-1)
-            }
-        }
-        if (isFile) {
-            id++
-        }
-        isFile = !isFile
-    }
-    block(explicitRow)
-    explicitRow.mapIndexed { i, j -> i * j }.filter { it > -1 }.sum()
+//Build to list of block (free + occupied) for each occupied try to place it in the first empty space
+fun Pair<MutableList<Block>, MutableList<Block>>.splitBlockList() =
+    let { it.first.flatMap { it.subBlocks() } to it.second.flatMap { it.subBlocks() } }
+
+fun Sequence<Line>.compute91(): Long = this.map { l ->
+    val (files, freeSpaces) = buildBlocks(l).splitBlockList()
+    reorder(files, freeSpaces)
+    computeScore(files)
 }.sum()
-
-fun Sequence<Line>.compute92(): Long = this.compute9 { list -> list.reorderBlock() }
-
-fun Sequence<Line>.compute91(): Long = this.compute9 { list -> list.reorderIndividual() }
-
-fun MutableList<Long>.reorderBlock() {
-    var rightCursor = this.lastIndex
-    /*var leftCursor = 0
-    while (this[leftCursor] != -1L) {
-        leftCursor++
-    }*/
-    while (0 <= rightCursor) {
-        //Find block
-        val blockToMove = this.buildBlockBackward(rightCursor) ?: return
-        val emptySpot = this.findEmptySpot(blockToMove, 0)
-        if (emptySpot != null) {
-            if(emptySpot.start >= blockToMove.start) return
-            //Move block
-            this.moveBlock(blockToMove, emptySpot.start)
-            this.clean(blockToMove)
-        }
-        rightCursor -= blockToMove.size
-        while (this[rightCursor] == -1L) {
-            rightCursor--
-        }
-       /* while (this[leftCursor] != -1L) {
-            leftCursor++
-        }*/
-    }
-
+fun Sequence<Line>.compute92(): Long = this.map { l ->
+    val (files, freeSpaces) = buildBlocks(l)
+    reorder(files, freeSpaces)
+    computeScore(files)
+}.sum()
+private fun computeScore(files: List<Block>) = files.sortedBy { it.start }.sumOf { f ->
+    (0 until f.size).sumOf { f.id * (f.start + it) }
 }
 
-fun MutableList<Long>.clean(block: Block) {
-    for (i in block.start until block.end()) {
-        this[i] = -1
-    }
-}
-
-fun MutableList<Long>.moveBlock(block: Block, startIndex: Int) {
-    for (i in startIndex until startIndex + block.size) {
-        this[i] = block.value
-    }
-}
-
-fun MutableList<Long>.findEmptySpot(blockToMove: Block, firstEmptyIndex: Int): Block? =
-    try {
-        var i = firstEmptyIndex
-        var emptyBlock = this.buildBlockForward(i)
-        while (emptyBlock.size < blockToMove.size && i < blockToMove.start) {
-            i += emptyBlock.size
-            emptyBlock = this.buildBlockForward(i)
-        }
-        if (i >= blockToMove.start) {
-            null
-        } else {
-            emptyBlock
-        }
-    } catch (e: IndexOutOfBoundsException) {
-        null
-    }
-
-
-fun MutableList<Long>.buildBlockBackward(startIndex: Int): Block? {
-    var i = startIndex
-    val ref = this[i]
-    while (ref == this[i] && i > 0) {
-        i--
-    }
-    if (i == 0) {
-        return null
-    }
-    val size = startIndex - i
-    return Block(i + 1, size, ref)
-}
-
-fun MutableList<Long>.buildBlockForward(initialIndex: Int): Block {
-    var i = initialIndex
-    while (this[i] != -1L) {
-        i++
-    }
-    val startIndex = i
-    while (this[i] == -1L) {
-        i++
-    }
-    val size = i - startIndex
-    return Block(startIndex, size, -1)
-}
-
-fun MutableList<Long>.reorderIndividual() {
-    var i = 0
-    var j = this.lastIndex
-    while (i < j) {
-        if (this[i] == -1L) {
-            while (this[j] == -1L) {
-                j--
+private fun reorder(
+    files: List<Block>,
+    freeSpaces: List<Block>
+) {
+    for (file in files.reversed()) {
+        //Read forward free
+        for (free in freeSpaces) {
+            if (free.start >= file.start) break
+            if (free.size >= file.size) {
+                //Move block
+                free.size -= file.size
+                file.start = free.start
+                free.start += file.size
+                break
             }
-            this[i] = this[j]
-            this[j] = -1
-            j--
-            i++
-
-        } else {
-            i++
         }
     }
 }
 
+private fun buildBlocks(l: Line): Pair<MutableList<Block>, MutableList<Block>> {
+    val files = mutableListOf<Block>()
+    val freeSpaces = mutableListOf<Block>()
+    var currentIndex = 0
+    l.split("").filter { it.isNotBlank() }.map { it.toInt() }.forEachIndexed { index, length ->
+        (if (index % 2 == 0) files else freeSpaces).add(
+            Block(currentIndex, length, if (index % 2 == 0) (index / 2).toLong() else -1L)
+        )
+        currentIndex += length
+    }
+    return Pair(files, freeSpaces)
+}

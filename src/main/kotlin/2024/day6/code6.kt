@@ -9,6 +9,7 @@ import prepare
 import right
 import up
 import java.io.File
+import java.lang.IndexOutOfBoundsException
 
 
 const val day = 6
@@ -28,14 +29,22 @@ fun main() {
 }
 
 
-
-
 fun Sequence<String>.compute61(): Int {
     val grid = this.map { it.split("") }.toList()
-    var (position, currentMove) = grid.findStartPosition()
-    val crossedPosition = mutableSetOf<Pair<Int, Int>>()
-    var moveIndex = directions.indexOf(currentMove)
+    val (position, currentMove) = grid.findStartPosition()
     //Until out apply move
+    return walkAround(position, grid, currentMove).size + 1
+}
+
+private fun walkAround(
+    initPosition: Position,
+    grid: List<List<String>>,
+    initMove: Direction,
+): MutableSet<Pair<Int, Int>> {
+    val crossedPosition: MutableSet<Pair<Int, Int>> = mutableSetOf()
+    var position = initPosition
+    var currentMove = initMove
+    var moveIndex = directions.indexOf(initMove)
     while (position.first in grid.indices && position.second in grid.first().indices) {
         try {
             if (grid.getValue(position.plus(currentMove)) == "#") {
@@ -44,11 +53,11 @@ fun Sequence<String>.compute61(): Int {
             }
             crossedPosition.add(position)
             position = position.plus(currentMove)
-        } catch (e: java.lang.IndexOutOfBoundsException) {
+        } catch (e: IndexOutOfBoundsException) {
             position = position.plus(currentMove)
         }
     }
-    return crossedPosition.size + 1
+    return crossedPosition
 }
 
 
@@ -60,22 +69,17 @@ fun Sequence<String>.compute61(): Int {
 //Change to find if any other square using next position on the same line until end of grid
 fun Sequence<String>.compute62(): Int {
     val grid = this.map { it.split("").toMutableList() }.toMutableList()
-    val crossedPosition = mutableSetOf<Pair<Int, Int>>()
-    walkAround(grid) {
-        crossedPosition.add(it)
-    }
-    var (position, currentMove) = grid.findStartPosition()
+    val (position, currentMove) = grid.findStartPosition()
+    val crossedPosition = walkAround(position, grid, currentMove)
     crossedPosition.remove(position)
     var sum = 0
     for (testPosition in crossedPosition) {
         val initChar = grid.getValue(testPosition)
         grid[testPosition.first][testPosition.second] = "#"
         val countingPosition = mutableMapOf<Position, Int>()
-
-
-        walkAround(grid) {
-            countingPosition[position] = (countingPosition[position] ?: 0) + 1
-            if (countingPosition[position]!! > 3) {
+        walkAround(grid) { p ->
+            countingPosition.compute(p) { _, v -> (v ?: 0) + 1 }
+            if (countingPosition[p]!! > 4) {
                 sum++
                 return@walkAround false
             }
@@ -84,28 +88,27 @@ fun Sequence<String>.compute62(): Int {
         grid[testPosition.first][testPosition.second] = initChar
 
     }
-    return sum
+    return sum +1
 }
 
-fun walkAround(grid: List<List<String>>, block: (position: Position) -> Boolean) {
+fun walkAround(grid: List<List<String>>, block: (p: Position) -> Boolean) {
     var (position, currentMove) = grid.findStartPosition()
     var moveIndex = directions.indexOf(currentMove)
     //Until out apply move
-    while (position.first in grid.indices && position.second in grid.first().indices) {
+    var shallContinue = true
+    while (shallContinue) {
         try {
             if (grid.getValue(position.plus(currentMove)) == "#") {
                 moveIndex = moveIndex.nextPositionIndex()
                 currentMove = directions[moveIndex]
+            } else if (block.invoke(position)) {
+                position = position.plus(currentMove)
             } else {
-                if (block.invoke(position)) {
-                    position = position.plus(currentMove)
-                } else {
-                    position = Pair(-1, -1)
-                }
+                shallContinue = false
             }
 
         } catch (e: java.lang.IndexOutOfBoundsException) {
-            position = position.plus(currentMove)
+            shallContinue = false
         }
     }
 }

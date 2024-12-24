@@ -3,6 +3,7 @@ import java.io.File
 fun File.prepare() = this.readLines().asSequence().filter { it.isNotBlank() }
 fun Pair<Int, Int>.plus(b: Pair<Int, Int>) = Pair(this.first + b.first, this.second + b.second)
 typealias Line = String
+
 fun Sequence<String>.buildGrid(): List<List<String>> = this.map { line ->
     line.split("").filter { it.isNotBlank() }.toList()
 }.toList()
@@ -17,60 +18,71 @@ val down = Pair(1, 0)
 val right = Pair(0, 1)
 val left = Pair(0, -1)
 val directions = listOf(up, right, down, left)
+fun List<Direction>.next(direction: Direction): Direction =
+    directions.indexOf(direction).nextPositionIndex().let { directions[it] }
 
-fun <T: Any> List<List<T>>.getValue(position: Pair<Int, Int>)= this[position.first][position.second]
 
-class LinkedListK<T:Any> {
-    var head : NodeDataClass<T>? = null
-    var tail : NodeDataClass<T>? = null
+fun Int.nextPositionIndex() = (this + 1) % directions.size
+
+typealias Direction = Pair<Int, Int>
+typealias Position = Pair<Int, Int>
+fun <T : Any> List<List<T>>.getValue(position: Pair<Int, Int>) = try {
+    this[position.first][position.second]
+} catch (e: IndexOutOfBoundsException) {
+    null
+}
+
+class LinkedListK<T : Any> {
+    var head: NodeDataClass<T>? = null
+    var tail: NodeDataClass<T>? = null
     var size = 0
 
 
     private fun isEmpty(): Boolean = size == 0
 
     override fun toString(): String {
-        return if (isEmpty()){
+        return if (isEmpty()) {
             "Empty List"
-        }else{
+        } else {
             head.toString()
         }
     }
 
-    fun push(value : T):LinkedListK<T> = apply{
+    fun push(value: T): LinkedListK<T> = apply {
         head = NodeDataClass(value = value, nextNode = head)
-        if (tail == null){
+        if (tail == null) {
             tail = head
         }
-        size ++
+        size++
     }
 
-    fun append(value: T):LinkedListK<T> = apply{
-        if (isEmpty()){
+    fun append(value: T): LinkedListK<T> = apply {
+        if (isEmpty()) {
             push(value)
             return this
         }
         val newNode = NodeDataClass(value = value)
         tail!!.nextNode = newNode
-        tail= newNode
+        tail = newNode
         size++
     }
 
-    fun nodeAt(index:Int): NodeDataClass<T>?{
+    fun nodeAt(index: Int): NodeDataClass<T>? {
         var currentNode = head
         var currentIndex = 0
-        while (currentNode != null && currentIndex <index){
-            currentNode= currentNode.nextNode
+        while (currentNode != null && currentIndex < index) {
+            currentNode = currentNode.nextNode
             currentIndex++
         }
         return currentNode
     }
 
-    fun insert(value : T , afterNode: NodeDataClass<T>): NodeDataClass<T>{
-        if (tail == afterNode){
+    fun insert(value: T, afterNode: NodeDataClass<T>): NodeDataClass<T> {
+        if (tail == afterNode) {
             append(value)
             return tail!!
         }
-        val newNode = NodeDataClass(value = value , nextNode = afterNode.nextNode)
+        val newNode = NodeDataClass(value = value, nextNode = afterNode.nextNode)
         afterNode.nextNode = newNode
         size++
 
@@ -80,10 +92,10 @@ class LinkedListK<T:Any> {
 
 //here we are trying to print the linked list in arrow format for better
 // readability
-data class NodeDataClass<T:Any>(
+data class NodeDataClass<T : Any>(
     var value: T,
     var nextNode: NodeDataClass<T>? = null
-){
+) {
     /*
     This function overrides the default toString method provided by Kotlin data classes.
 
@@ -93,9 +105,9 @@ data class NodeDataClass<T:Any>(
      If nextNode is null, it simply returns the value of the current node.
     */
     override fun toString(): String {
-        return if (nextNode != null){
+        return if (nextNode != null) {
             "$value -> ${nextNode.toString()}"
-        }else{
+        } else {
             "$value"
         }
     }

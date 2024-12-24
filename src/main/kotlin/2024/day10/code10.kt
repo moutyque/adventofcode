@@ -54,15 +54,11 @@ private fun Sequence<String>.prepare(): Pair<MutableMap<Node, Node>, MutableSet<
             }
             val neighbors = directions.mapNotNull { d ->
                 Pair(y, x).plus(d).let {
-                    try {
-                        //Is value of neighbor ok
-                        val nValue = grid.getValue(it)
-                        when {
-                            nValue - value != 1 -> null
-                            else -> it.toNode().also { n -> n.value = nValue }
-                        }
-                    } catch (e: IndexOutOfBoundsException) {
-                        null
+                    //Is value of neighbor ok
+                    val nValue = grid.getValue(it) ?: return@mapNotNull null
+                    when {
+                        nValue - value != 1 -> null
+                        else -> it.toNode().also { n -> n.value = nValue }
                     }
                 }
             }

@@ -1,9 +1,12 @@
 package `2024`.day6
 
+import Direction
+import Position
 import directions
 import down
 import getValue
 import left
+import nextPositionIndex
 import plus
 import prepare
 import right
@@ -74,7 +77,7 @@ fun Sequence<String>.compute62(): Int {
     crossedPosition.remove(position)
     var sum = 0
     for (testPosition in crossedPosition) {
-        val initChar = grid.getValue(testPosition)
+        val initChar = grid.getValue(testPosition)!!
         grid[testPosition.first][testPosition.second] = "#"
         val countingPosition = mutableMapOf<Position, Int>()
         walkAround(grid) { p ->
@@ -113,10 +116,8 @@ fun walkAround(grid: List<List<String>>, block: (p: Position) -> Boolean) {
     }
 }
 
-fun Int.nextPositionIndex() = (this + 1) % directions.size
 
-typealias Direction = Pair<Int, Int>
-typealias Position = Pair<Int, Int>
+
 
 fun List<List<String>>.findStartPosition(): Pair<Position, Direction> {
     for (x in this.indices) {

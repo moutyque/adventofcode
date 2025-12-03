@@ -1,4 +1,5 @@
-import jdk.internal.org.jline.utils.DiffHelper.diff
+package `2025`.day1
+
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.sign

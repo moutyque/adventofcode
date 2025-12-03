@@ -1,6 +1,6 @@
+package `2025`.day2
+
 import java.io.File
-import kotlin.math.abs
-import kotlin.math.sign
 
 val path = "./src/main/kotlin/2025/day2"
 fun main() {
